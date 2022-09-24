@@ -23,7 +23,7 @@ const Pokeman = () => {
         setTimeout(() => {
             page++;
             getPosts();
-            }, 1000);
+            }, 2000);
     }
 
     useEffect(() => {
