@@ -15,7 +15,7 @@ const Pokeman = () => {
           `https://api.pokemontcg.io/v2/cards?page=1&pageSize=${pageSize}`
         );
         const data = await response.json();
-        setData([...data.data, ...datas]);
+        setData([...datas, ...data.data]);
         setIsFetching(false)
     };
 
