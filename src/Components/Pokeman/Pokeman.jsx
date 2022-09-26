@@ -6,24 +6,24 @@ import { useEffect, useState } from 'react';
 const Pokeman = () => {
     const [datas, setData] = useState([])
     const [isFetching, setIsFetching] = useState(false);
-
-    let page = 1500;
+    
+    let pageSize = 10;
 
     const getPosts = async () => {
         setIsFetching(true)
         const response = await fetch(
-          `https://api.pokemontcg.io/v2/cards?page=${page}&pageSize=10`
+          `https://api.pokemontcg.io/v2/cards?page=1&pageSize=${pageSize}`
         );
         const data = await response.json();
-        setData([...datas, ...data.data]);
+        setData([...data.data, ...datas]);
         setIsFetching(false)
     };
 
     function getMorePosts() {
         setTimeout(() => {
-            page++;
+            pageSize+=10;
             getPosts();
-            }, 2000);
+            }, 4000);
     }
 
     useEffect(() => {
