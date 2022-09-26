@@ -7,7 +7,7 @@ const Pokeman = () => {
     const [datas, setData] = useState([])
     const [isFetching, setIsFetching] = useState(false);
     
-    let pageSize = 10;
+    let pageSize = 1;
 
     const getPosts = async () => {
         setIsFetching(true)
