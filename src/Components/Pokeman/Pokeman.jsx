@@ -6,33 +6,10 @@ import { v4 as uuidv4 } from 'uuid';
 const Pokeman = () => {
   const [datas, setData] = useState([])
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
   const [page, setPage] = useState(0);
   const loader = useRef(null);
-    
-  useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-      setLoading(true);
-      setError(false);
-      fetch(`https://api.pokemontcg.io/v2/cards?page=${page}&pageSize=10`,{signal})
-      .then((res) => {
-        return res.json();
-      }).then((data)=>{
-        // console.log(data)
-        setData((prev) => [...prev, ...data.data]);
-        setLoading(false);
-      }).catch( (err) =>{
-        setLoading(false);
-        setError(err);
-      })
 
-    return()=>{
-        controller.abort();
-    }
-  }, [page]);
-    
-  useEffect(() => {
+    useEffect(() => {
     const option = {
         root: null,
         rootMargin: "10px",
@@ -49,6 +26,26 @@ const Pokeman = () => {
         observer.disconnect();
     })
   }, []);
+    
+  useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+    (async () => {
+      try{
+        setLoading(true);
+        const res = await fetch(`https://api.pokemontcg.io/v2/cards?page=${page}&pageSize=10`,{signal});
+        const data = await res.json();
+        setData((prev) => [...prev, ...data.data]);
+        setLoading(false);
+      }catch(err){
+        setLoading(false);
+      }
+    })();
+
+    return()=>{
+        controller.abort();
+    }
+  }, [page]);
 
   return(
       <Fragment>
@@ -59,7 +56,6 @@ const Pokeman = () => {
             
           </div>
           {loading && <p>Loading...</p>}
-          {error && <p>Something Went Wrong...</p>}
           <div ref={loader} />
       </Fragment>
   )
