@@ -4,3 +4,9 @@
     flex-wrap:wrap;
     padding: 50px 100px;
 }
+
+@media screen and (max-width:550px) {
+    .pokeman{
+        padding: 50px 30px;
+    }
+}

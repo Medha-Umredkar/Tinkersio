@@ -1,59 +1,68 @@
 import './Pokeman.css'
 import Card from "../Card/Card";
-import { useEffect, useState } from 'react';
-
+import { useEffect, useState, useRef, Fragment } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 const Pokeman = () => {
-    const [datas, setData] = useState([])
-    const [isFetching, setIsFetching] = useState(false);
+  const [datas, setData] = useState([])
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [page, setPage] = useState(0);
+  const loader = useRef(null);
     
-    let pageSize = 10;
+  useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+      setLoading(true);
+      setError(false);
+      fetch(`https://api.pokemontcg.io/v2/cards?page=${page}&pageSize=10`,{signal})
+      .then((res) => {
+        return res.json();
+      }).then((data)=>{
+        // console.log(data)
+        setData((prev) => [...prev, ...data.data]);
+        setLoading(false);
+      }).catch( (err) =>{
+        setLoading(false);
+        setError(err);
+      })
 
-    const getPosts = async () => {
-        setIsFetching(true)
-        const response = await fetch(
-          `https://api.pokemontcg.io/v2/cards?page=1&pageSize=${pageSize}`
-        );
-        const data = await response.json();
-        setData([...datas, ...data.data]);
-        setIsFetching(false)
+    return()=>{
+        controller.abort();
+    }
+  }, [page]);
+    
+  useEffect(() => {
+    const option = {
+        root: null,
+        rootMargin: "10px",
+        threshold: 0
     };
+    const observer = new IntersectionObserver((entries) => {
+      const target = entries[0];
+      if (target.isIntersecting) {
+        setPage((prev) => prev + 1);
+      }
+    },option);
+    if (loader.current) observer.observe(loader.current);
+    return(()=>{
+        observer.disconnect();
+    })
+  }, []);
 
-    function getMorePosts() {
-        setTimeout(() => {
-            pageSize+=10;
-            getPosts();
-            }, 4000);
-    }
-
-    useEffect(() => {
-        getPosts();
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-      
-    useEffect(() => {
-        if (!isFetching) return;
-        getMorePosts();
-    }, [isFetching]);
-
-    const handleScroll = () => {
-        if (
-          window.innerHeight + document.documentElement.scrollTop !==
-          document.documentElement.offsetHeight
-        )
-          return;
-        setIsFetching(true);
-    }
-
-    return(
-        <div className="pokeman">
+  return(
+      <Fragment>
+          <div className="pokeman">
             {Object.keys(datas).map((item) => {
-                return <Card name={datas[item].name} attacks={datas[item].attacks} hp={datas[item].hp} abilities={datas[item].abilities} image={datas[item].images.large} />
+                return <Card key={uuidv4()} name={datas[item].name} attacks={datas[item].attacks} hp={datas[item].hp} abilities={datas[item].abilities} image={datas[item].images.large} />
             })}
-        </div>
-    )
+            
+          </div>
+          {loading && <p>Loading...</p>}
+          {error && <p>Something Went Wrong...</p>}
+          <div ref={loader} />
+      </Fragment>
+  )
 }
 
 export default Pokeman;
